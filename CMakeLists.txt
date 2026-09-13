@@ -39,8 +39,9 @@ if(NOT NO_MATH_LIB_REQUIRED)
     list(APPEND CMAKE_REQUIRED_LIBRARIES m)
 endif()
 
-find_package(BISON 3.8)
-find_package(FLEX 2.6)
+# Pre-generated Scanner.c and Compiler.c are already provided. Do not invoke host bison/flex tools.
+# find_package(BISON 3.8)
+# find_package(FLEX 2.6)
 
 add_subdirectory(projectm-eval)
 

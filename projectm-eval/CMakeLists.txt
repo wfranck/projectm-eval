@@ -9,6 +9,11 @@ set(FLEX_OUTPUT_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Scanner.h
     )
 
+# Pre-generated Scanner.c/h and Compiler.c/h are already included in repository.
+# Disable FLEX_FOUND and BISON_FOUND to prevent build errors on machines without Xcode flex/bison.
+set(FLEX_FOUND OFF)
+set(BISON_FOUND OFF)
+
 if(FLEX_FOUND)
     # Generate lexer code
     add_custom_command(COMMAND ${FLEX_EXECUTABLE}
