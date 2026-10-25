@@ -591,7 +591,8 @@ prjm_eval_function_decl(div)
         return;
     }
 
-    assign_ret_val(*val1_ptr / *val2_ptr);
+    PRJM_EVAL_F res = *val1_ptr / *val2_ptr;
+    assign_ret_val(isfinite(res) ? res : 0.0);
 }
 
 prjm_eval_function_decl(mod)
@@ -768,7 +769,8 @@ prjm_eval_function_decl(div_op)
         return;
     }
 
-    assign_ret_val(**ret_val / *val2_ptr);
+    PRJM_EVAL_F res = **ret_val / *val2_ptr;
+    assign_ret_val(isfinite(res) ? res : 0.0);
 }
 
 prjm_eval_function_decl(bitwise_or_op)
@@ -864,7 +866,7 @@ prjm_eval_function_decl(pow_op)
 
     PRJM_EVAL_F result = pow(**ret_val, *val2_ptr);
 
-    assign_ret_val(isnan(result) ? .0 : result);
+    assign_ret_val(isfinite(result) ? result : .0);
 }
 
 
@@ -902,7 +904,8 @@ prjm_eval_function_decl(tan)
 
     invoke_arg(0, &math_arg_ptr);
 
-    assign_ret_val(tan(*math_arg_ptr));
+    PRJM_EVAL_F res = tan(*math_arg_ptr);
+    assign_ret_val(isfinite(res) ? res : .0);
 }
 
 prjm_eval_function_decl(asin)
@@ -914,13 +917,16 @@ prjm_eval_function_decl(asin)
 
     invoke_arg(0, &math_arg_ptr);
 
-    if (*math_arg_ptr < -1.0 || *math_arg_ptr > 1.0)
+    PRJM_EVAL_F arg = *math_arg_ptr;
+    if (arg < -1.001 || arg > 1.001)
     {
         assign_ret_val(.0);
         return;
     }
+    if (arg < -1.0) arg = -1.0;
+    else if (arg > 1.0) arg = 1.0;
 
-    assign_ret_val(asin(*math_arg_ptr));
+    assign_ret_val(asin(arg));
 }
 
 prjm_eval_function_decl(acos)
@@ -932,13 +938,16 @@ prjm_eval_function_decl(acos)
 
     invoke_arg(0, &math_arg_ptr);
 
-    if (*math_arg_ptr < -1.0 || *math_arg_ptr > 1.0)
+    PRJM_EVAL_F arg = *math_arg_ptr;
+    if (arg < -1.001 || arg > 1.001)
     {
         assign_ret_val(.0);
         return;
     }
+    if (arg < -1.0) arg = -1.0;
+    else if (arg > 1.0) arg = 1.0;
 
-    assign_ret_val(acos(*math_arg_ptr));
+    assign_ret_val(acos(arg));
 }
 
 prjm_eval_function_decl(atan)
@@ -1000,7 +1009,7 @@ prjm_eval_function_decl(pow)
 
     PRJM_EVAL_F result = pow(*math_arg1_ptr, *math_arg2_ptr);
 
-    assign_ret_val(isnan(result) ? .0 : result);
+    assign_ret_val(isfinite(result) ? result : .0);
 }
 
 prjm_eval_function_decl(exp)
@@ -1012,7 +1021,8 @@ prjm_eval_function_decl(exp)
 
     invoke_arg(0, &math_arg_ptr);
 
-    assign_ret_val(exp(*math_arg_ptr));
+    PRJM_EVAL_F res = exp(*math_arg_ptr);
+    assign_ret_val(isfinite(res) ? res : .0);
 }
 
 prjm_eval_function_decl(log)
@@ -1211,10 +1221,17 @@ prjm_eval_function_decl(invsqrt)
 
     invoke_arg(0, &value_ptr);
 
-    PRJM_EVAL_F num2 = (*value_ptr) * one_half;
-    type_conv.PRJM_F_val = (*value_ptr);
+    PRJM_EVAL_F val = fabs(*value_ptr);
+    if (val <= close_factor_low)
+    {
+        assign_ret_val(0.0);
+        return;
+    }
+
+    PRJM_EVAL_F num2 = val * one_half;
+    type_conv.PRJM_F_val = val;
     type_conv.int_val = INVSQRT_MAGIC_NUMBER - (type_conv.int_val >> 1);
     type_conv.PRJM_F_val = type_conv.PRJM_F_val * (three_halfs - (num2 * type_conv.PRJM_F_val * type_conv.PRJM_F_val));
 
-    assign_ret_val(isnan(type_conv.PRJM_F_val) ? 0 : (type_conv.PRJM_F_val));
+    assign_ret_val(isfinite(type_conv.PRJM_F_val) ? (type_conv.PRJM_F_val) : 0.0);
 }
